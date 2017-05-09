@@ -9,15 +9,15 @@
 </template>
 
 <script>
+
+const width = 20
+const height = 20
+
 export default {
   name: 'grid',
   data () {
     return {
-      rows: [
-        [0, 0, 0],
-        [0, 1, 1],
-        [0, 0, 1]
-      ]
+      rows: new Array(height).fill(new Array(width))
     }
   }
 }
