@@ -12,13 +12,29 @@
 
 const width = 20
 const height = 20
+for (var rows = []; rows.push(new Array(width)) < height;);
+
+function draw (snake, rows) {
+  snake.forEach(cell => {
+    rows[cell.y][cell.x] = cell
+  })
+}
 
 export default {
   name: 'grid',
   data () {
     return {
-      rows: new Array(height).fill(new Array(width))
+      rows,
+      snake: []
     }
+  },
+  created () {
+    this.snake = [
+      { x: 3, y: 5 }, // tail
+      { x: 4, y: 5 },
+      { x: 5, y: 5 }  // head
+    ]
+    draw(this.snake, this.rows)
   }
 }
 </script>
