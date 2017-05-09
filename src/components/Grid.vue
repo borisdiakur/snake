@@ -66,15 +66,19 @@ export default {
       const charCode = (typeof event.which === 'number') ? event.which : event.keyCode
       switch (charCode) {
         case 38: // arrow up
+          if (direction === 'd') return
           direction = 'u'
           break
         case 40: // arrow down
+          if (direction === 'u') return
           direction = 'd'
           break
         case 37: // arrow left
+          if (direction === 'r') return
           direction = 'l'
           break
         case 39: // arrow right
+          if (direction === 'l') return
           direction = 'r'
           break
       }
