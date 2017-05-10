@@ -11,7 +11,8 @@
 <script>
 import Vue from 'vue'
 
-let direction = ''
+let currentDirection = ''
+let nextDirection = ''
 const width = 20
 const height = 20
 const interval = 100
@@ -24,8 +25,17 @@ const snake = [
 
 function draw (snake, rows) {
   snake.forEach(cell => {
-    Vue.set(rows[cell.y], cell.x, true)
+    Vue.set(rows[cell.y], cell.x, 'snake')
   })
+}
+
+function feed (snake, rows) {
+  let randomY, randomX
+  do {
+    randomY = Math.floor(Math.random() * height)
+    randomX = Math.floor(Math.random() * width)
+  } while (rows[randomY][randomX])
+  Vue.set(rows[randomY], randomX, 'mouse')
 }
 
 export default {
@@ -37,33 +47,36 @@ export default {
     }
   },
   created () {
-    // draw the initial snake
+    // draw the initial snake and feed it
     draw(snake, this.rows)
+    feed(snake, this.rows)
 
     // make it move
     const intervalId = setInterval(() => {
-      if (!direction) return
+      if (!nextDirection) return
+      currentDirection = nextDirection
+
       const head = snake[snake.length - 1]
       let nextCell
-      switch (direction) {
+      switch (currentDirection) {
         case 'l':
-          nextCell = {x: head.x - 1, y: head.y}
+          nextCell = { x: head.x - 1, y: head.y }
           break
         case 'r':
-          nextCell = {x: head.x + 1, y: head.y}
+          nextCell = { x: head.x + 1, y: head.y }
           break
         case 'u':
-          nextCell = {x: head.x, y: head.y - 1}
+          nextCell = { x: head.x, y: head.y - 1 }
           break
         case 'd':
-          nextCell = {x: head.x, y: head.y + 1}
+          nextCell = { x: head.x, y: head.y + 1 }
           break
       }
 
-      // game over if the snake bites itself or moves out of grid
+      // game over if the snake moves out of grid or bites itself
       if (
-        snake.find(cell => cell.x === nextCell.x && cell.y === nextCell.y) ||
-        nextCell.x < 0 || nextCell.x >= width || nextCell.y < 0 || nextCell.y >= height
+        nextCell.x < 0 || nextCell.x >= width || nextCell.y < 0 || nextCell.y >= height ||
+        rows[nextCell.y][nextCell.x] === 'snake'
       ) {
         clearInterval(intervalId)
         alert('Game over')
@@ -72,8 +85,16 @@ export default {
 
       snake.push(nextCell)
       const tail = snake.shift()
-      draw(snake, this.rows)
-      setTimeout(() => { Vue.set(this.rows[tail.y], tail.x, undefined) }, interval / 2)
+
+      // eat mouse
+      if (rows[nextCell.y][nextCell.x] === 'mouse') {
+        snake.unshift({ x: tail.x, y: tail.y })
+        draw(snake, this.rows)
+        feed(snake, this.rows)
+      } else {
+        setTimeout(() => { Vue.set(this.rows[tail.y], tail.x, undefined) }, interval / 2)
+        draw(snake, this.rows)
+      }
     }, interval)
 
     // set direction on keyboard input
@@ -82,20 +103,20 @@ export default {
       const charCode = (typeof event.which === 'number') ? event.which : event.keyCode
       switch (charCode) {
         case 37: // arrow left
-          if (direction === 'r' || !direction) return
-          direction = 'l'
+          if (currentDirection === 'r' || !currentDirection) return
+          nextDirection = 'l'
           break
         case 39: // arrow right
-          if (direction === 'l') return
-          direction = 'r'
+          if (currentDirection === 'l') return
+          nextDirection = 'r'
           break
         case 38: // arrow up
-          if (direction === 'd') return
-          direction = 'u'
+          if (currentDirection === 'd') return
+          nextDirection = 'u'
           break
         case 40: // arrow down
-          if (direction === 'u') return
-          direction = 'd'
+          if (currentDirection === 'u') return
+          nextDirection = 'd'
           break
       }
     }
